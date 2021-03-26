@@ -21,3 +21,7 @@ We conduct extensive experiments in urban-scene segmentation and show the superi
 <p align="center">
   <img src="assets/fig_main.png" />
 </p>
+
+## Code Contributors
+[Sungha Choi](https://www.linkedin.com/in/sungha-choi-1130185a/) (LG AI Research), Sanghun Jung (KAIST AI)
+
