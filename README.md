@@ -23,5 +23,5 @@ We conduct extensive experiments in urban-scene segmentation and show the superi
 </p>
 
 ## Code Contributors
-[Sungha Choi](https://www.linkedin.com/in/sungha-choi-1130185a/) (LG AI Research), Sanghun Jung (KAIST AI)
+[Sungha Choi](https://www.linkedin.com/in/sungha-choi-1130185a/) (LG AI Research), [Sanghun Jung](https://www.linkedin.com/in/sanghun-jung-b17a4b1b8/) (KAIST AI)
 
