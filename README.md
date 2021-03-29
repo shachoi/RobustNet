@@ -30,5 +30,5 @@ We conduct extensive experiments in urban-scene segmentation and show the superi
 Comming soon.
 
 ## Acknowledgments
-Our pytorch implementation is heavily derived from [NVIDIA segmentation](https://github.com/NVIDIA/semantic-segmentation).
+Our pytorch implementation is heavily derived from [NVIDIA segmentation](https://github.com/NVIDIA/semantic-segmentation) and HANet (https://github.com/shachoi/HANet).
 Thanks to the NVIDIA implementations.
