@@ -141,7 +141,7 @@ class DeepV3Plus(nn.Module):
                         print("error in shufflnet layer 0 forward path")
                         return
 
-                    x = self.layer(x)
+                    x = self.layer[0][0](x)
                     if self.iw >= 1:
                         if self.iw == 1 or self.iw == 2:
                             x, w, c = self.instance_norm_layer(x)
@@ -149,6 +149,11 @@ class DeepV3Plus(nn.Module):
                             c_arr.append(c)
                         else:
                             x = self.instance_norm_layer(x)
+                    else:
+                        x = self.layer[0][1](x)
+
+                    x = self.layer[0][2](x)
+                    x = self.layer[1](x)
 
                     return [x, w_arr, c_arr]
 
@@ -165,10 +170,10 @@ class DeepV3Plus(nn.Module):
                         w_arr = x_tuple[1]
                         x = x_tuple[0]
                     else:
-                        print("error in shufflnet layer 0 forward path")
+                        print("error in shufflnet layer 4 forward path")
                         return
 
-                    x = self.layer(x)
+                    x = self.layer[0](x)
                     if self.iw >= 1:
                         if self.iw == 1 or self.iw == 2:
                             x, w, c = self.instance_norm_layer(x)
@@ -176,6 +181,9 @@ class DeepV3Plus(nn.Module):
                             c_arr.append(c)
                         else:
                             x = self.instance_norm_layer(x)
+                    else:
+                        x = self.layer[1](x)
+                    x = self.layer[2](x)
 
                     return [x, w_arr, c_arr]
 
