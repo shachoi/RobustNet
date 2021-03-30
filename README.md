@@ -7,7 +7,7 @@ This repository provides the official PyTorch implementation of the following pa
 > Joanne T. Kim (Korea Univ.), Seungryong Kim (Korea Univ.), Jaegul Choo (KAIST AI) (*: equal contribution)<br>
 > CVPR 2021, Accepted as Oral Presentation<br>
 
-> Paper : [pdf](https://arxiv.org/abs/2103.15597) <br>
+> Paper : [arxiv](https://arxiv.org/abs/2103.15597) <br>
 
 > **Abstract:** 
 *Enhancing the generalization performance of deep neural networks in the real world (i.e., unseen domains) is crucial for safety-critical applications such as autonomous driving.
