@@ -1,5 +1,5 @@
 ## RobustNet (CVPR 2021 Oral): Official Project Webpage
-Codes will release soon.
+Codes will be released soon.
 
 This repository provides the official PyTorch implementation of the following paper:
 > **RobustNet:** Improving Domain Generalization in Urban-Scene Segmentationvia Instance Selective Whitening<br>
