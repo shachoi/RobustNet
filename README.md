@@ -1,5 +1,5 @@
 ## RobustNet (CVPR 2021 Oral): Official Project Webpage
-Codes and paper will release soon.
+Codes will release soon.
 
 This repository provides the official PyTorch implementation of the following paper:
 > **RobustNet:** Improving Domain Generalization in Urban-Scene Segmentationvia Instance Selective Whitening<br>
@@ -7,7 +7,7 @@ This repository provides the official PyTorch implementation of the following pa
 > Joanne T. Kim (Korea Univ.), Seungryong Kim (Korea Univ.), Jaegul Choo (KAIST AI) (*: equal contribution)<br>
 > CVPR 2021, Accepted as Oral Presentation<br>
 
-> Paper : [pdf] [supp] <br>
+> Paper : [pdf](https://arxiv.org/abs/2103.15597) <br>
 
 > **Abstract:** 
 *Enhancing the generalization performance of deep neural networks in the real world (i.e., unseen domains) is crucial for safety-critical applications such as autonomous driving.
