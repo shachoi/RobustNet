@@ -34,7 +34,6 @@ from utils.misc import fast_hist, save_log, per_class_iu, evaluate_eval_for_infe
 
 import time
 import network
-from thop import profile, clever_format
 
 sys.path.append(os.path.join(os.getcwd()))
 
@@ -90,6 +89,9 @@ parser.add_argument('--image_in', action='store_true', default=False,
                     help='Image instance normalization')
 parser.add_argument('--visualize_feature', action='store_true', default=False,
                     help='Save intermediate feature map into NPY Files')
+parser.add_argument('--relax_denom', type=float, default=0.0)
+parser.add_argument('--clusters', type=int, default=0.0)
+parser.add_argument('--trials', type=int, default=0.0)
 
 
 args = parser.parse_args()
@@ -98,7 +100,6 @@ cudnn.benchmark = True
 args.world_size = 1
 
 if 'WORLD_SIZE' in os.environ:
-    # args.apex = int(os.environ['WORLD_SIZE']) > 1
     args.world_size = int(os.environ['WORLD_SIZE'])
     print("Total world size: ", int(os.environ['WORLD_SIZE']))
 
@@ -146,7 +147,6 @@ def sliding_window_cropping(data, scale=1.0):
     for img_ctr in range(len(data)):
 
         h, w = data[img_ctr].shape[1:]
-        # print("here 1 h, w", h, w)
         mapping[img_ctr] = [w, h, []]
         stride = ceil(tile_size[0] * (1 - overlap))
 
@@ -165,24 +165,17 @@ def sliding_window_cropping(data, scale=1.0):
                     x1 = 0
                 if y1 < 0:
                     y1 = 0
-                # print("here 2", x1, y1, x2, y2, "h, w", h, w, "tile_size", tile_size[0], tile_size[1])
                 if crop_ctr == 0:
                     sliding_window_cropping = data[img_ctr][:, y1:y2, x1:x2].unsqueeze(0)
-                    # print("0 sliding_window_cropping", sliding_window_cropping.shape)
                 else:
                     sliding_window_cropping = torch.cat(
                         (sliding_window_cropping,
                          data[img_ctr][:, y1:y2, x1:x2].unsqueeze(0)),
                         dim=0)
-                    # print("1 sliding_window_cropping", sliding_window_cropping.shape)
 
                 mapping[img_ctr][2].append((x1, y1, x2, y2))
-                scale_facotr = 1024 / h
-                y1_t = int(y1*scale_facotr)
-                y2_t = int(y2*scale_facotr) 
                 crop_ctr += 1
 
-    # print("mapping", mapping)
     return (mapping, sliding_window_cropping)
 
 
@@ -271,17 +264,9 @@ def pooled_eval(model, image, scale):
     Perform Pooled Evaluation
     """
     with torch.no_grad():
-        # print("image", image.shape)
         y = model(image)
         y = torch.nn.functional.interpolate(y, size=(1024, 2048), mode='bilinear')
         del image
-        # if scale > 1.0:
-        #     y = torch.nn.AvgPool2d((2, 2), stride=2)(y)
-        # elif scale < 1.0:
-        #     y = torch.nn.Upsample(scale_factor=2, mode='bilinear')(y)
-        # else:
-        #     pass
-        # print("y", y.shape)
 
     return y
 
@@ -321,22 +306,13 @@ def inference_pool(model, img, scales):
                 y_tmp = pooled_eval(model, img[flip][i], scales[i])
             else:
                 y_tmp = pooled_eval(model, img[flip][i], scales[i])
-                # y_tmp = [x.add_(y) for x, y in zip(y_tmp, out)]
-                # print("here 0", y_tmp.shape)
             if flip == 0:
                 fusion_cls.update(y_tmp.cpu())
             else:
                 fusion_cls.update(flip_tensor2(y_tmp.cpu(), -1))
 
-    #     if flip == 0:
-    #         y_tmp_with_flip = y_tmp
-    #     else:
-    #         y_tmp_with_flip = [x.add_(flip_tensor(y, 2)) for x, y in zip(y_tmp_with_flip, y_tmp)]
-    # y = [torch.argmax(y_ / (flip_range * len(scales)), dim=0).cpu().numpy() for y_ in
-    #      y_tmp_with_flip]
     probs, preds = fusion_cls.output()
     pred = preds.cpu().numpy()
-    # y = torch.argmax(y_tmp_with_flip / (flip_range * len(scales)), dim=1).cpu().numpy()
 
     return pred
 
@@ -374,45 +350,18 @@ def inference_sliding(model, img, scales):
             flip_list.append(flip)
 
         mapping, input_crops = sliding_window_cropping(image_list, scale=scale)
-        # print("pos", batch_pos_h.shape)
-        # print("input", input_crops.shape)
-        # print(mapping)
-        # print("input_crops.shape", input_crops.shape) # torch.Size([6, 3, 1024, 1024])
-        # pos_h, pos_w = pos
-        # print(pos_h.shape)    # torch.Size([1, 1024, 2048])
 
-        #### Old version
-        torch.cuda.empty_cache()    # 0.8131146770229599
+        torch.cuda.empty_cache()
         with torch.no_grad():
-            # input_crops = Variable(input_crops.cuda())
             batch_num = input_crops.shape[0]
-            print(batch_num)
             output_crops = []
 
             for i in range(batch_num):
                 input_crop = input_crops[i].unsqueeze(0).cuda()
-                # print("input_crop", input_crop.shape)
                 output_crop = model(input_crop)
-                # print("output_crop", output_crop.shape)
                 output_crops.append(output_crop)
                 del input_crop
             output_scattered = torch.cat(output_crops, dim=0)
-            # print("output_scattered", output_scattered.shape)
-
-        #### New version
-        # torch.cuda.empty_cache()    # 0.7957220614941667
-        # with torch.no_grad():
-        #     bi, _, hi, wi = input_crops.size()
-        #     if hi >= args.crop_size:
-        #         output_scattered_list = []
-        #         for b_idx in range(bi):
-        #             cur_input = input_crops[b_idx,:,:,:].unsqueeze(0).cuda()
-        #             cur_output = model(cur_input)
-        #             output_scattered_list.append(cur_output)
-        #         output_scattered = torch.cat(output_scattered_list, dim=0)
-        #     else:
-        #         input_crops = input_crops.cuda()
-        #         output_scattered = model(input_crops)
 
         output_scattered = output_scattered.data.cpu().numpy()
 
@@ -439,19 +388,24 @@ def setup_loader():
 
     if args.dataset == 'cityscapes':
         args.dataset_cls = cityscapes
-        eval_mode_pooling = False
         eval_scales = None
         if args.inference_mode == 'pooling':
-            eval_mode_pooling = True
+            eval_mode = 'pooling'
             eval_scales = args.scales
+        elif args.inference_mode == 'sliding':
+            eval_mode = 'sliding'
+        else:
+            raise Exception(f"Not implemented inference mode: {args.inference_mode}")
+
         test_set = args.dataset_cls.CityScapes(args.mode, args.split, 0,
                                                transform=val_input_transform,
                                                target_transform=target_transform,
                                                cv_split=0,#args.cv_split,
-                                                eval_mode=eval_mode_pooling,
-                                                eval_scales=eval_scales,
-                                                eval_flip=not args.no_flip,
-                                                )
+                                               eval_mode=eval_mode,
+                                               eval_scales=eval_scales,
+                                               eval_flip=not args.no_flip,
+                                               image_in=args.image_in
+                                               )
     else:
         raise NameError('-------------Not Supported Currently-------------')
 
@@ -508,19 +462,8 @@ class RunEval():
         if self.metrics:
             self.hist = np.zeros((self.dataset_cls.num_classes,
                                   self.dataset_cls.num_classes))
-            self.hist_up = np.zeros((self.dataset_cls.num_classes,
-                                  self.dataset_cls.num_classes))
-            self.hist_mid1 = np.zeros((self.dataset_cls.num_classes,
-                                  self.dataset_cls.num_classes))
-            self.hist_mid2 = np.zeros((self.dataset_cls.num_classes,
-                                  self.dataset_cls.num_classes))
-            self.hist_down = np.zeros((self.dataset_cls.num_classes,
-                                  self.dataset_cls.num_classes))
         else:
             self.hist = None
-            self.hist_up = None
-            self.hist_mid = None
-            self.hist_down = None
 
     def softmax(self, x):
         """Compute softmax values for each sets of scores in x."""
@@ -545,8 +488,6 @@ class RunEval():
         else:
             img = to_pil(imgs[0])
         prediction_pre_argmax_collection = inference(net, img, scales)
-        # print(len(prediction_pre_argmax_collection))
-        # print(prediction_pre_argmax_collection[0].shape)
 
         if self.inference_mode == 'pooling':
             prediction = prediction_pre_argmax_collection
@@ -561,31 +502,7 @@ class RunEval():
             iou_w = round(np.nanmean(per_class_iu(self.hist)) * 100, 2)
             # acc_w = np.diag(self.hist).sum() / self.hist.sum()
 
-            H, W = prediction.shape
-            pred_split = np.split(prediction, [H//4, (H//4)*2, (H//4)*3], axis=0)
-            gt_split = np.split(gt.cpu().numpy(), [H//4, (H//4)*2, (H//4)*3], axis=1)
-            self.hist_up += fast_hist(pred_split[0].flatten(), gt_split[0].flatten(),
-                                   self.dataset_cls.num_classes)
-            iou_u = round(np.nanmean(per_class_iu(self.hist_up)) * 100, 2)
-            # acc_u = np.diag(self.hist_up).sum() / self.hist_up.sum()
-
-            self.hist_mid1 += fast_hist(pred_split[1].flatten(), gt_split[1].flatten(),
-                                   self.dataset_cls.num_classes)
-            iou_m1 = round(np.nanmean(per_class_iu(self.hist_mid1)) * 100, 2)
-            # acc_m1 = np.diag(self.hist_mid1).sum() / self.hist_mid1.sum()
-
-            self.hist_mid2 += fast_hist(pred_split[2].flatten(), gt_split[2].flatten(),
-                                   self.dataset_cls.num_classes)
-            iou_m2 = round(np.nanmean(per_class_iu(self.hist_mid2)) * 100, 2)
-            # acc_m2 = np.diag(self.hist_mid2).sum() / self.hist_mid2.sum()
-
-            self.hist_down += fast_hist(pred_split[3].flatten(), gt_split[3].flatten(),
-                                   self.dataset_cls.num_classes)
-            iou_d = round(np.nanmean(per_class_iu(self.hist_down)) * 100, 2)
-            # acc_d = np.diag(self.hist_down).sum() / self.hist_down.sum()
-
-            pbar.set_description("Mean IOU (Whole,Up,Mid1,Mid2,DOWN): %s %s %s %s %s" % (str(iou_w), str(iou_u), str(iou_m1), str(iou_m2), str(iou_d)))
-            # pbar.set_description("ACC (Whole,Up,Mid,DOWN): %s %s %s %s" % (str(acc_w), str(acc_u), str(acc_m), str(acc_d)))
+            pbar.set_description("Mean IOU: %s" % (str(iou_w)))
 
         ######################################################################
         # Dump Images
@@ -594,7 +511,6 @@ class RunEval():
 
             if self.inference_mode == 'pooling':
                 img = pool_base_img
-
             colorized = self.dataset_cls.colorize_mask(prediction)
             colorized.save(col_img_name)
             blend = Image.blend(img.convert("RGBA"), colorized.convert("RGBA"), 0.5)
@@ -623,22 +539,6 @@ class RunEval():
         if self.metrics:
             print("Entire image")
             acc, acc_cls, mean_iu, fwavacc = evaluate_eval_for_inference(self.hist, args.dataset_cls)
-            print("values: ", acc, acc_cls, mean_iu, fwavacc)
-            print("-------------------")
-            print("Upper")
-            acc, acc_cls, mean_iu, fwavacc = evaluate_eval_for_inference(self.hist_up, args.dataset_cls)
-            print("values: ", acc, acc_cls, mean_iu, fwavacc)
-            print("-------------------")
-            print("Mid 1")
-            acc, acc_cls, mean_iu, fwavacc = evaluate_eval_for_inference(self.hist_mid1, args.dataset_cls)
-            print("values: ", acc, acc_cls, mean_iu, fwavacc)
-            print("-------------------")
-            print("Mid 2")
-            acc, acc_cls, mean_iu, fwavacc = evaluate_eval_for_inference(self.hist_mid2, args.dataset_cls)
-            print("values: ", acc, acc_cls, mean_iu, fwavacc)
-            print("-------------------")
-            print("Lower")
-            acc, acc_cls, mean_iu, fwavacc = evaluate_eval_for_inference(self.hist_down, args.dataset_cls)
             print("values: ", acc, acc_cls, mean_iu, fwavacc)
 
 
@@ -715,8 +615,6 @@ def main():
     # Run Inference!
     pbar = tqdm(test_loader, desc='eval {}'.format(args.split), smoothing=1.0)
     for iteration, data in enumerate(pbar):
-        #if iteration < 800:
-        #    continue
         if args.dataset == 'video_folder':
             imgs, img_names = data
             gt = None
@@ -728,15 +626,8 @@ def main():
                 gt = gt_with_imgs[1]
             else:
                 base_img = None
-            imgs, gt, img_names, mask_aux = data
-################### Profile
-        # pos = (pos_h, pos_w)
-        # flops, params = profile(net, inputs=(imgs, pos))
-        # print("Flops", flops, params)
-        # flops, params = clever_format([flops, params], "%.3f")
-        # print("Flops", flops, params)
-        # exit()
-################### Profile
+                imgs, gt, img_names, mask_aux = data
+
         runner.inf(imgs, img_names, gt, inference, net, scales, pbar, base_img)
         if iteration > 5 and args.test_mode:
             break
