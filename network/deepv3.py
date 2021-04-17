@@ -583,7 +583,7 @@ class DeepV3Plus(nn.Module):
                 for f_map in w_arr:
                     f_cor = get_covariance_matrix(f_map)
                     f_cor_arr.append(f_cor)
-                    return_loss.append(f_cor_arr)
+                return_loss.append(f_cor_arr)
             return return_loss
         else:
             if visualize:
