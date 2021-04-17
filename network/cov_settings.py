@@ -26,11 +26,9 @@ class CovMatrix_ISW:
         # num_off_diagonal = ((dim * dim - dim) // 2)  # number of off-diagonal
         self.num_off_diagonal = torch.sum(self.reversal_i)
         self.num_sensitive = 0
-        self.num_insensitive = 0
         self.var_matrix = None
         self.count_var_cov = 0
         self.mask_matrix = None
-        self.reversal_mask_matrix = None
         self.clusters = clusters
         print("num_off_diagonal", self.num_off_diagonal)
         if relax_denom == 0:
@@ -75,8 +73,6 @@ class CovMatrix_ISW:
             self.mask_matrix = mask_matrix.view(self.dim, self.dim)
         self.num_sensitive = torch.sum(self.mask_matrix)
         print("Check whether two ints are same", num_sensitive, self.num_sensitive)
-        self.reversal_mask_matrix = self.reversal_i - self.mask_matrix
-        self.num_insensitive = torch.sum(self.reversal_mask_matrix)
 
         self.var_matrix = None
         self.count_var_cov = 0
@@ -84,7 +80,7 @@ class CovMatrix_ISW:
         if torch.cuda.current_device() == 0:
             print("Covariance Info: (CXC Shape, Num_Off_Diagonal)", self.mask_matrix.shape, self.num_off_diagonal)
             print("Selective (Sensitive Covariance)", self.num_sensitive)
-            print("num_insensitive: ", self.num_insensitive)
+
 
     def set_variance_of_covariance(self, var_cov, var_cov_geo):
         if self.var_matrix is None:
