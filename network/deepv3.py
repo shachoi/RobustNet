@@ -133,8 +133,7 @@ class DeepV3Plus(nn.Module):
                     self.iw = iw
 
                 def forward(self, x_tuple):
-                    if len(x_tuple) == 3:
-                        c_arr = x_tuple[2]
+                    if len(x_tuple) == 2:
                         w_arr = x_tuple[1]
                         x = x_tuple[0]
                     else:
@@ -144,9 +143,8 @@ class DeepV3Plus(nn.Module):
                     x = self.layer[0][0](x)
                     if self.iw >= 1:
                         if self.iw == 1 or self.iw == 2:
-                            x, w, c = self.instance_norm_layer(x)
+                            x, w = self.instance_norm_layer(x)
                             w_arr.append(w)
-                            c_arr.append(c)
                         else:
                             x = self.instance_norm_layer(x)
                     else:
@@ -155,7 +153,7 @@ class DeepV3Plus(nn.Module):
                     x = self.layer[0][2](x)
                     x = self.layer[1](x)
 
-                    return [x, w_arr, c_arr]
+                    return [x, w_arr]
 
             class Layer4(nn.Module):
                 def __init__(self, iw):
@@ -165,8 +163,7 @@ class DeepV3Plus(nn.Module):
                     self.iw = iw
 
                 def forward(self, x_tuple):
-                    if len(x_tuple) == 3:
-                        c_arr = x_tuple[2]
+                    if len(x_tuple) == 2:
                         w_arr = x_tuple[1]
                         x = x_tuple[0]
                     else:
@@ -176,16 +173,15 @@ class DeepV3Plus(nn.Module):
                     x = self.layer[0](x)
                     if self.iw >= 1:
                         if self.iw == 1 or self.iw == 2:
-                            x, w, c = self.instance_norm_layer(x)
+                            x, w = self.instance_norm_layer(x)
                             w_arr.append(w)
-                            c_arr.append(c)
                         else:
                             x = self.instance_norm_layer(x)
                     else:
                         x = self.layer[1](x)
                     x = self.layer[2](x)
 
-                    return [x, w_arr, c_arr]
+                    return [x, w_arr]
 
 
             self.layer0 = Layer0(iw=self.args.wt_layer[2])
@@ -479,7 +475,6 @@ class DeepV3Plus(nn.Module):
 
     def forward(self, x, gts=None, aux_gts=None, img_gt=None, visualize=False, cal_covstat=False, apply_wtloss=True):
         w_arr = []
-        c_arr = []
 
         if cal_covstat:
             x = torch.cat(x, dim=0)
@@ -487,33 +482,29 @@ class DeepV3Plus(nn.Module):
         x_size = x.size()  # 800
 
         if self.trunk == 'mobilenetv2' or self.trunk == 'shufflenetv2':
-            x_tuple = self.layer0([x, w_arr, c_arr])
+            x_tuple = self.layer0([x, w_arr])
             x = x_tuple[0]
             w_arr = x_tuple[1]
-            c_arr = x_tuple[2]
         else:
             if self.three_input_layer:
                 x = self.layer0[0](x)
                 if self.args.wt_layer[0] == 1 or self.args.wt_layer[0] == 2:
-                    x, w, c = self.layer0[1](x)
+                    x, w = self.layer0[1](x)
                     w_arr.append(w)
-                    c_arr.append(c)
                 else:
                     x = self.layer0[1](x)
                 x = self.layer0[2](x)
                 x = self.layer0[3](x)
                 if self.args.wt_layer[1] == 1 or self.args.wt_layer[1] == 2:
-                    x, w, c = self.layer0[4](x)
+                    x, w = self.layer0[4](x)
                     w_arr.append(w)
-                    c_arr.append(c)
                 else:
                     x = self.layer0[4](x)
                 x = self.layer0[5](x)
                 x = self.layer0[6](x)
                 if self.args.wt_layer[2] == 1 or self.args.wt_layer[2] == 2:
-                    x, w, c = self.layer0[7](x)
+                    x, w = self.layer0[7](x)
                     w_arr.append(w)
-                    c_arr.append(c)
                 else:
                     x = self.layer0[7](x)
                 x = self.layer0[8](x)
@@ -521,15 +512,14 @@ class DeepV3Plus(nn.Module):
             else:   # Single Input Layer
                 x = self.layer0[0](x)
                 if self.args.wt_layer[2] == 1 or self.args.wt_layer[2] == 2:
-                    x, w, c = self.layer0[1](x)
+                    x, w = self.layer0[1](x)
                     w_arr.append(w)
-                    c_arr.append(c)
                 else:
                     x = self.layer0[1](x)
                 x = self.layer0[2](x)
                 x = self.layer0[3](x)
 
-        x_tuple = self.layer1([x, w_arr, c_arr])  # 400
+        x_tuple = self.layer1([x, w_arr])  # 400
         low_level = x_tuple[0]
 
         x_tuple = self.layer2(x_tuple)  # 100
@@ -538,7 +528,6 @@ class DeepV3Plus(nn.Module):
         x_tuple = self.layer4(x_tuple)  # 100
         x = x_tuple[0]
         w_arr = x_tuple[1]
-        c_arr = x_tuple[2]
 
         if cal_covstat:
             for index, f_map in enumerate(w_arr):
@@ -582,9 +571,6 @@ class DeepV3Plus(nn.Module):
                         if self.cov_type[index] == 1 or self.cov_type[index] == 2:   # IW/IRW/ISW
                             off_diag_sum = torch.sum(torch.abs(f_cor_masked), dim=(1,2), keepdim=True) - margin # B X 1 X 1
                             off_diag_reg = torch.clamp(torch.div(off_diag_sum, num_remove_cov), min=0) # B X 1 X 1
-                        #elif self.cov_type[index] == 2:   # ISW
-                        #    off_diag_sum = torch.sum(torch.abs(f_cor_masked), dim=(1,2), keepdim=True) # B X 1 X 1
-                        #    off_diag_reg = torch.div(off_diag_sum, num_remove_cov) # B X 1 X 1
 
                         off_diag_reg = torch.sum(off_diag_reg) / B
                         wt_reg = wt_reg + off_diag_reg

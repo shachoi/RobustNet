@@ -101,8 +101,7 @@ class BasicBlock(nn.Module):
             self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x_tuple):
-        if len(x_tuple) == 3:
-            c_arr = x_tuple[2]
+        if len(x_tuple) == 2:
             w_arr = x_tuple[1]
             x = x_tuple[0]
         else:
@@ -125,15 +124,14 @@ class BasicBlock(nn.Module):
 
         if self.iw >= 1:
             if self.iw == 1 or self.iw == 2:
-                out, w, c = self.instance_norm_layer(out)
+                out, w = self.instance_norm_layer(out)
                 w_arr.append(w)
-                c_arr.append(c)
             else:
                 out = self.instance_norm_layer(out)
 
         out = self.relu(out)
 
-        return [out, w_arr, c_arr]
+        return [out, w_arr]
 
 
 class Bottleneck(nn.Module):
@@ -181,8 +179,7 @@ class Bottleneck(nn.Module):
             self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x_tuple):
-        if len(x_tuple) == 3:
-            c_arr = x_tuple[2]
+        if len(x_tuple) == 2:
             w_arr = x_tuple[1]
             x = x_tuple[0]
         else:
@@ -209,15 +206,14 @@ class Bottleneck(nn.Module):
 
         if self.iw >= 1:
             if self.iw == 1 or self.iw == 2:
-                out, w, c = self.instance_norm_layer(out)
+                out, w = self.instance_norm_layer(out)
                 w_arr.append(w)
-                c_arr.append(c)
             else:
                 out = self.instance_norm_layer(out)
 
         out = self.relu(out)
 
-        return [out, w_arr, c_arr]
+        return [out, w_arr]
 
 
 class ResNet3X3(nn.Module):
@@ -452,15 +448,6 @@ class ResNet(nn.Module):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
-        # x = self.conv1(input)
-        # x = self.bn1(x)
-        # x = self.relu1(x)
-        # x = self.conv2(x)
-        # x = self.bn2(x)
-        # x = self.relu2(x)
-        # x = self.conv3(x)
-        # x = self.bn3(x)
-        # x = self.relu3(x)
 
         x = self.maxpool(x)
 

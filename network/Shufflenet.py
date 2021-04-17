@@ -86,8 +86,7 @@ class InvertedResidual(nn.Module):
         return nn.Conv2d(i, o, kernel_size, stride, padding, bias=bias, groups=i)
 
     def forward(self, x_tuple):
-        if len(x_tuple) == 3:
-            c_arr = x_tuple[2]
+        if len(x_tuple) == 2:
             w_arr = x_tuple[1]
             x = x_tuple[0]
         else:
@@ -106,10 +105,9 @@ class InvertedResidual(nn.Module):
             if self.iw == 1 or self.iw == 2:
                 out, w, c = self.instance_norm_layer(out)
                 w_arr.append(w)
-                c_arr.append(c)
             else:
                 out = self.instance_norm_layer(out)
-        return [out, w_arr, c_arr]
+        return [out, w_arr]
 
 
 class ShuffleNetV2(nn.Module):

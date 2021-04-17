@@ -71,8 +71,7 @@ class ConvBNReLU(nn.Sequential):
 
 
     def forward(self, x_tuple):
-        if len(x_tuple) == 3:
-            c_arr = x_tuple[2]
+        if len(x_tuple) == 2:
             w_arr = x_tuple[1]
             x = x_tuple[0]
         else:
@@ -83,15 +82,14 @@ class ConvBNReLU(nn.Sequential):
             if i == len(self) - 1:
                 if self.iw >= 1:
                     if self.iw == 1 or self.iw == 2:
-                        x, w, c = self.instance_norm_layer(x)
+                        x, w = self.instance_norm_layer(x)
                         w_arr.append(w)
-                        c_arr.append(c)
                     else:
                         x = self.instance_norm_layer(x)
             else:
                 x = module(x)
 
-        return [x, w_arr, c_arr]
+        return [x, w_arr]
 
 
 class InvertedResidual(nn.Module):
@@ -141,7 +139,7 @@ class InvertedResidual(nn.Module):
 
 
     def forward(self, x_tuple):
-        if len(x_tuple) == 3:
+        if len(x_tuple) == 2:
             x = x_tuple[0]
         else:
             print("error in invert residual forward path")
@@ -150,14 +148,12 @@ class InvertedResidual(nn.Module):
             x_tuple = self.conv[0](x_tuple)
             x_tuple = self.conv[1](x_tuple)
             conv_x = x_tuple[0]
-            c_arr = x_tuple[2]
             w_arr = x_tuple[1]
             conv_x = self.conv[2](conv_x)
             conv_x = self.conv[3](conv_x)
         else:
             x_tuple = self.conv[0](x_tuple)
             conv_x = x_tuple[0]
-            c_arr = x_tuple[2]
             w_arr = x_tuple[1]
             conv_x = self.conv[1](conv_x)
             conv_x = self.conv[2](conv_x)
@@ -169,13 +165,12 @@ class InvertedResidual(nn.Module):
 
         if self.iw >= 1:
             if self.iw == 1 or self.iw == 2:
-                x, w, c = self.instance_norm_layer(x)
+                x, w = self.instance_norm_layer(x)
                 w_arr.append(w)
-                c_arr.append(c)
             else:
                 x = self.instance_norm_layer(x)
 
-        return [x, w_arr, c_arr]
+        return [x, w_arr]
 
 
 class MobileNetV2(nn.Module):

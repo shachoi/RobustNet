@@ -46,7 +46,7 @@ class CovMatrix_ISW:
     def get_mask_matrix(self, mask=True):
         if self.mask_matrix is None:
             self.set_mask_matrix()
-        return self.i, self.mask_matrix, 0, self.num_sensitive #self.num_off_diagonal #self.num_sensitive
+        return self.i, self.mask_matrix, 0, self.num_sensitive
 
     def reset_mask_matrix(self):
         self.mask_matrix = None
