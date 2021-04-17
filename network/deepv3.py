@@ -30,6 +30,7 @@ from network import Resnet
 from network import Mobilenet
 from network import Shufflenet
 from network.cov_settings import CovMatrix_ISW, CovMatrix_IRW
+from network.instance_whitening import instance_whitening_loss, get_covariance_matrix
 from network.mynn import initialize_weights, Norm2d, Upsample, freeze_weights, unfreeze_weights
 
 import torchvision.models as models
@@ -485,7 +486,7 @@ class DeepV3Plus(nn.Module):
             x_tuple = self.layer0([x, w_arr])
             x = x_tuple[0]
             w_arr = x_tuple[1]
-        else:
+        else:   # ResNet
             if self.three_input_layer:
                 x = self.layer0[0](x)
                 if self.args.wt_layer[0] == 1 or self.args.wt_layer[0] == 2:
@@ -535,7 +536,7 @@ class DeepV3Plus(nn.Module):
                 B, C, H, W = f_map.shape  # i-th feature size (B X C X H X W)
                 HW = H * W
                 f_map = f_map.contiguous().view(B, C, -1)  # B X C X H X W > B X C X (H X W)
-                eye, reverse_eye, num_off_diagonal = self.cov_matrix_layer[index].get_covariance_info()
+                eye, reverse_eye = self.cov_matrix_layer[index].get_eye_matrix()
                 f_cor = torch.bmm(f_map, f_map.transpose(1, 2)).div(HW - 1) + (self.eps * eye)  # B X C X C / HW
                 off_diag_elements = f_cor * reverse_eye
                 self.cov_matrix_layer[index].set_variance_of_covariance(torch.var(off_diag_elements[0:2], dim=0),
@@ -560,19 +561,8 @@ class DeepV3Plus(nn.Module):
                 wt_reg = torch.FloatTensor([0]).cuda()
                 if apply_wtloss:
                     for index, f_map in enumerate(w_arr):
-                        B, C, H, W = f_map.shape # i-th feature size (B X C X H X W)
-                        HW = H * W
-
-                        f_map = f_map.contiguous().view(B, C, -1) # B X C X H X W > B X C X (H X W)
                         eye, mask_matrix, margin, num_remove_cov= self.cov_matrix_layer[index].get_mask_matrix()
-                        f_cor = torch.bmm(f_map, f_map.transpose(1, 2)).div(HW - 1) + (self.eps * eye)  # B X C X C / HW
-                        f_cor_masked = f_cor * mask_matrix
-
-                        if self.cov_type[index] == 1 or self.cov_type[index] == 2:   # IW/IRW/ISW
-                            off_diag_sum = torch.sum(torch.abs(f_cor_masked), dim=(1,2), keepdim=True) - margin # B X 1 X 1
-                            off_diag_reg = torch.clamp(torch.div(off_diag_sum, num_remove_cov), min=0) # B X 1 X 1
-
-                        off_diag_reg = torch.sum(off_diag_reg) / B
+                        off_diag_reg = instance_whitening_loss(f_map, eye, mask_matrix, margin, num_remove_cov)
                         wt_reg = wt_reg + off_diag_reg
                 wt_reg = wt_reg / len(w_arr)
 
@@ -591,10 +581,7 @@ class DeepV3Plus(nn.Module):
             if self.args.use_wtloss and visualize:
                 f_cor_arr = []
                 for f_map in w_arr:
-                    B, C, H, W = f_map.shape  # i-th feature size (B X C X H X W)
-                    eye = torch.eye(C).cuda()
-                    f_map = f_map.contiguous().view(B, C, -1)  # B X C X H X W > B X C X (H X W)
-                    f_cor = torch.bmm(f_map, f_map.transpose(1, 2)).div(H*W-1) + (self.eps * eye)  # C X C / HW
+                    f_cor = get_covariance_matrix(f_map)
                     f_cor_arr.append(f_cor)
                     return_loss.append(f_cor_arr)
             return return_loss
@@ -602,10 +589,7 @@ class DeepV3Plus(nn.Module):
             if visualize:
                 f_cor_arr = []
                 for f_map in w_arr:
-                    B, C, H, W = f_map.shape  # i-th feature size (B X C X H X W)
-                    eye = torch.eye(C).cuda()
-                    f_map = f_map.contiguous().view(B, C, -1)  # B X C X H X W > B X C X (H X W)
-                    f_cor = torch.bmm(f_map, f_map.transpose(1, 2)).div(H*W-1) + (self.eps * eye)  # C X C / HW
+                    f_cor = get_covariance_matrix(f_map)
                     f_cor_arr.append(f_cor)
                 return main_out, f_cor_arr
             else:

@@ -40,8 +40,8 @@ class CovMatrix_ISW:
         else:
             self.margin = self.num_off_diagonal // relax_denom
 
-    def get_covariance_info(self):
-        return self.i, self.reversal_i, self.num_off_diagonal
+    def get_eye_matrix(self):
+        return self.i, self.reversal_i
 
     def get_mask_matrix(self, mask=True):
         if self.mask_matrix is None:
