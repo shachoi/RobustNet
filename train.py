@@ -349,11 +349,11 @@ def train(train_loader, net, optim, curr_epoch, writer, scheduler, max_iter):
             total_loss = main_loss + (0.4 * aux_loss)
 
             if args.use_wtloss and (not args.use_isw or (args.use_isw and curr_epoch > args.cov_stat_epoch)):
-                wt_reg = outputs[outputs_index]
+                wt_loss = outputs[outputs_index]
                 outputs_index += 1
-                total_loss = total_loss + (args.wt_reg_weight * wt_reg)
+                total_loss = total_loss + (args.wt_reg_weight * wt_loss)
             else:
-                wt_reg = 0
+                wt_loss = 0
 
             if args.visualize_feature:
                 f_cor_arr = outputs[outputs_index]
@@ -382,7 +382,7 @@ def train(train_loader, net, optim, curr_epoch, writer, scheduler, max_iter):
 
                     logging.info(msg)
                     if args.use_wtloss:
-                        print("Whitening Reg", wt_reg)
+                        print("Whitening Loss", wt_loss)
 
                     # Log tensorboard metrics for each iteration of the training phase
                     writer.add_scalar('loss/train_loss', (train_total_loss.avg),

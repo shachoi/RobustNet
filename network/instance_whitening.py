@@ -22,10 +22,10 @@ def instance_whitening_loss(f_map, eye, mask_matrix, margin, num_remove_cov):
     f_cor_masked = f_cor * mask_matrix
 
     off_diag_sum = torch.sum(torch.abs(f_cor_masked), dim=(1,2), keepdim=True) - margin # B X 1 X 1
-    off_diag_reg = torch.clamp(torch.div(off_diag_sum, num_remove_cov), min=0) # B X 1 X 1
-    off_diag_reg = torch.sum(off_diag_reg) / B
+    loss = torch.clamp(torch.div(off_diag_sum, num_remove_cov), min=0) # B X 1 X 1
+    loss = torch.sum(loss) / B
 
-    return off_diag_reg
+    return loss
 
 
 def get_covariance_matrix(f_map, eye=None):

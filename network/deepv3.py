@@ -558,13 +558,13 @@ class DeepV3Plus(nn.Module):
             loss1 = self.criterion(main_out, gts)
 
             if self.args.use_wtloss:
-                wt_reg = torch.FloatTensor([0]).cuda()
+                wt_loss = torch.FloatTensor([0]).cuda()
                 if apply_wtloss:
                     for index, f_map in enumerate(w_arr):
                         eye, mask_matrix, margin, num_remove_cov= self.cov_matrix_layer[index].get_mask_matrix()
-                        off_diag_reg = instance_whitening_loss(f_map, eye, mask_matrix, margin, num_remove_cov)
-                        wt_reg = wt_reg + off_diag_reg
-                wt_reg = wt_reg / len(w_arr)
+                        loss = instance_whitening_loss(f_map, eye, mask_matrix, margin, num_remove_cov)
+                        wt_loss = wt_loss + loss
+                wt_loss = wt_loss / len(w_arr)
 
             aux_out = self.dsn(aux_out)
             if aux_gts.dim() == 1:
@@ -576,7 +576,7 @@ class DeepV3Plus(nn.Module):
 
             return_loss = [loss1, loss2]
             if self.args.use_wtloss:
-                return_loss.append(wt_reg)
+                return_loss.append(wt_loss)
 
             if self.args.use_wtloss and visualize:
                 f_cor_arr = []
