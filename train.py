@@ -498,13 +498,13 @@ def validate_for_cov_stat(val_loader, dataset, net, criterion, optim, scheduler,
     net.eval()
 
     for val_idx, data in enumerate(val_loader):
-        img_or, img_color, img_geometric, img_name = data
-        img_or, img_color, img_geometric = img_or.cuda(), img_color.cuda(), img_geometric.cuda()
+        img_or, img_photometric img_geometric, img_name = data   # img_geometric is not used.
+        img_or, img_photometric = img_or.cuda(), img_photometric.cuda()
 
         with torch.no_grad():
-            net([img_color, img_or, img_geometric], cal_covstat=True)
+            net([img_photometric, img_or], cal_covstat=True)
 
-        del img_or, img_color, img_geometric
+        del img_or, img_photometric, img_geometric
 
         # Logging
         if val_idx % 20 == 0:

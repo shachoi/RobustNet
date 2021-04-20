@@ -20,7 +20,7 @@ class CovMatrix_ISW:
         self.dim = dim
         self.i = torch.eye(dim, dim).cuda()
 
-        print(torch.ones(16, 16).triu(diagonal=1))
+        # print(torch.ones(16, 16).triu(diagonal=1))
         self.reversal_i = torch.ones(dim, dim).triu(diagonal=1).cuda()
 
         # num_off_diagonal = ((dim * dim - dim) // 2)  # number of off-diagonal
@@ -31,11 +31,11 @@ class CovMatrix_ISW:
         self.mask_matrix = None
         self.clusters = clusters
         print("num_off_diagonal", self.num_off_diagonal)
-        if relax_denom == 0:
+        if relax_denom == 0:    # kmeans1d clustering setting for ISW
             print("relax_denom == 0!!!!!")
             print("cluster == ", self.clusters)
             self.margin = 0
-        else:
+        else:                   # do not use
             self.margin = self.num_off_diagonal // relax_denom
 
     def get_eye_matrix(self):
@@ -50,17 +50,16 @@ class CovMatrix_ISW:
         self.mask_matrix = None
 
     def set_mask_matrix(self):
-        torch.set_printoptions(threshold=500000)
-
+        # torch.set_printoptions(threshold=500000)
         self.var_matrix = self.var_matrix / self.count_var_cov
         var_flatten = torch.flatten(self.var_matrix)
 
-        if self.margin == 0:
+        if self.margin == 0:    # kmeans1d clustering setting for ISW
             clusters, centroids = kmeans1d.cluster(var_flatten, self.clusters) # 50 clusters
             num_sensitive = var_flatten.size()[0] - clusters.count(0)  # 1: Insensitive Cov, 2~50: Sensitive Cov
             print("num_sensitive, centroids =", num_sensitive, centroids)
             _, indices = torch.topk(var_flatten, k=int(num_sensitive))
-        else:
+        else:                   # do not use
             num_sensitive = self.num_off_diagonal - self.margin
             print("num_sensitive = ", num_sensitive)
             _, indices = torch.topk(var_flatten, k=int(num_sensitive))
@@ -82,7 +81,7 @@ class CovMatrix_ISW:
             print("Selective (Sensitive Covariance)", self.num_sensitive)
 
 
-    def set_variance_of_covariance(self, var_cov, var_cov_geo):
+    def set_variance_of_covariance(self, var_cov):
         if self.var_matrix is None:
             self.var_matrix = var_cov
         else:

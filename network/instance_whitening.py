@@ -6,7 +6,6 @@ class InstanceWhitening(nn.Module):
 
     def __init__(self, dim):
         super(InstanceWhitening, self).__init__()
-        self.coloring = coloring
         self.instance_standardization = nn.InstanceNorm2d(dim, affine=False)
 
     def forward(self, x):
