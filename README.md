@@ -1,6 +1,4 @@
 ## RobustNet (CVPR 2021 Oral): Official Project Webpage
-Codes and pretrained models will be released soon.
-
 This repository provides the official PyTorch implementation of the following paper:
 > **RobustNet:** Improving Domain Generalization in Urban-Scene Segmentationvia Instance Selective Whitening<br>
 > Sungha Choi* (LG AI Research), Sanghun Jung* (KAIST AI), Huiwon Yun (Sogang Univ.)<br>
@@ -47,7 +45,6 @@ imageio_download_bin freeimage
 ```
 ### How to Run RobustNet
 We evaludated RobustNet on [Cityscapes](https://www.cityscapes-dataset.com/), [BDD-100K](https://bair.berkeley.edu/blog/2018/05/30/bdd/),[Synthia](https://synthia-dataset.net/downloads/), [GTAV](https://download.visinf.tu-darmstadt.de/data/from_games/) and [Mapillary Vistas](https://www.mapillary.com/dataset/vistas?pKey=2ix3yvnjy9fwqdzwum3t9g&lat=20&lng=0&z=1.5).
-
 1. For Cityscapes dataset, download "leftImg8bit_trainvaltest.zip" and "gtFine_trainvaltest.zip" from https://www.cityscapes-dataset.com/downloads/<br>
 Unzip the files and make the directory structures as follows.
 ```
@@ -95,7 +92,6 @@ To train ResNet-101 based RobustNetNet, you should download ImageNet pretrained 
 <path_to_robustnet>/pretrained/resnet101-imagenet.pth
 ```
 This pretrained model is from [MIT CSAIL Computer Vision Group](http://sceneparsing.csail.mit.edu/)
-
 ## Acknowledgments
 Our pytorch implementation is heavily derived from [NVIDIA segmentation](https://github.com/NVIDIA/semantic-segmentation) and [HANet](https://github.com/shachoi/HANet).
 Thanks to the NVIDIA implementations.
