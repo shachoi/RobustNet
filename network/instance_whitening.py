@@ -17,7 +17,7 @@ class InstanceWhitening(nn.Module):
 
 
 def instance_whitening_loss(f_map, eye, mask_matrix, margin, num_remove_cov):
-    f_cor = get_covariance_matrix(f_map, eye=eye)
+    f_cor, B = get_covariance_matrix(f_map, eye=eye)
     f_cor_masked = f_cor * mask_matrix
 
     off_diag_sum = torch.sum(torch.abs(f_cor_masked), dim=(1,2), keepdim=True) - margin # B X 1 X 1
@@ -28,11 +28,12 @@ def instance_whitening_loss(f_map, eye, mask_matrix, margin, num_remove_cov):
 
 
 def get_covariance_matrix(f_map, eye=None):
+    eps = 1e-5
     B, C, H, W = f_map.shape  # i-th feature size (B X C X H X W)
     HW = H * W
     if eye is None:
         eye = torch.eye(C).cuda()
     f_map = f_map.contiguous().view(B, C, -1)  # B X C X H X W > B X C X (H X W)
-    f_cor = torch.bmm(f_map, f_map.transpose(1, 2)).div(HW-1) + (self.eps * eye)  # C X C / HW
+    f_cor = torch.bmm(f_map, f_map.transpose(1, 2)).div(HW-1) + (eps * eye)  # C X C / HW
 
-    return f_cor
+    return f_cor, B
