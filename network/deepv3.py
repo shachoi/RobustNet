@@ -539,7 +539,7 @@ class DeepV3Plus(nn.Module):
                 eye, reverse_eye = self.cov_matrix_layer[index].get_eye_matrix()
                 f_cor = torch.bmm(f_map, f_map.transpose(1, 2)).div(HW - 1) + (self.eps * eye)  # B X C X C / HW
                 off_diag_elements = f_cor * reverse_eye
-                print("here", off_diag_elements.shape)
+                #print("here", off_diag_elements.shape)
                 self.cov_matrix_layer[index].set_variance_of_covariance(torch.var(off_diag_elements, dim=0))
             return 0
 
