@@ -498,7 +498,7 @@ def validate_for_cov_stat(val_loader, dataset, net, criterion, optim, scheduler,
     net.eval()
 
     for val_idx, data in enumerate(val_loader):
-        img_or, img_photometric img_geometric, img_name = data   # img_geometric is not used.
+        img_or, img_photometric, img_geometric, img_name = data   # img_geometric is not used.
         img_or, img_photometric = img_or.cuda(), img_photometric.cuda()
 
         with torch.no_grad():
