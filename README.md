@@ -5,7 +5,8 @@ This repository provides the official PyTorch implementation of the following pa
 > Joanne T. Kim (Korea Univ.), Seungryong Kim (Korea Univ.), Jaegul Choo (KAIST AI) (*: equal contribution)<br>
 > CVPR 2021, Accepted as Oral Presentation<br>
 
-> Paper : [arxiv](https://arxiv.org/abs/2103.15597), [slide](https://www.slideshare.net/SunghaChoi1/cvpr-2021-oral-robustnet-improving-domain-generalization-in-urbanscene-segmentation) <br>
+> Paper: [arxiv](https://arxiv.org/abs/2103.15597)
+> Slide: [slideshare](https://www.slideshare.net/SunghaChoi1/cvpr-2021-oral-robustnet-improving-domain-generalization-in-urbanscene-segmentation) <br>
 
 > **Abstract:** 
 *Enhancing the generalization performance of deep neural networks in the real world (i.e., unseen domains) is crucial for safety-critical applications such as autonomous driving.
