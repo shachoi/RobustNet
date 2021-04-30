@@ -7,7 +7,7 @@ This repository provides the official PyTorch implementation of the following pa
 
 > Paper: [arxiv](https://arxiv.org/abs/2103.15597)<br>
 > Slide: [slideshare](https://www.slideshare.net/SunghaChoi1/cvpr-2021-oral-robustnet-improving-domain-generalization-in-urbanscene-segmentation) <br>
-
+> Seminar (Korean): [youtube](https://youtu.be/OAvvsp8KsYM)
 > **Abstract:** 
 *Enhancing the generalization performance of deep neural networks in the real world (i.e., unseen domains) is crucial for safety-critical applications such as autonomous driving.
 To address this issue, this paper proposes a novel instance selective whitening loss to improve the robustness of the segmentation networks for unseen domains.
