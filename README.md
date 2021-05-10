@@ -49,7 +49,7 @@ pip install kmeans1d
 imageio_download_bin freeimage
 ```
 ### How to Run RobustNet
-We evaludated RobustNet on [Cityscapes](https://www.cityscapes-dataset.com/), [BDD-100K](https://bair.berkeley.edu/blog/2018/05/30/bdd/),[Synthia](https://synthia-dataset.net/downloads/), [GTAV](https://download.visinf.tu-darmstadt.de/data/from_games/) and [Mapillary Vistas](https://www.mapillary.com/dataset/vistas?pKey=2ix3yvnjy9fwqdzwum3t9g&lat=20&lng=0&z=1.5).
+We evaludated RobustNet on [Cityscapes](https://www.cityscapes-dataset.com/), [BDD-100K](https://bair.berkeley.edu/blog/2018/05/30/bdd/),[Synthia](https://synthia-dataset.net/downloads/) ([SYNTHIA-RAND-CITYSCAPES](http://synthia-dataset.net/download/808/)), [GTAV](https://download.visinf.tu-darmstadt.de/data/from_games/) and [Mapillary Vistas](https://www.mapillary.com/dataset/vistas?pKey=2ix3yvnjy9fwqdzwum3t9g&lat=20&lng=0&z=1.5).
 1. For Cityscapes dataset, download "leftImg8bit_trainvaltest.zip" and "gtFine_trainvaltest.zip" from https://www.cityscapes-dataset.com/downloads/<br>
 Unzip the files and make the directory structures as follows.
 ```
@@ -87,6 +87,10 @@ mapillary
    └ images
    └ labels
 ```
+
+We used [GTAV_Split](https://download.visinf.tu-darmstadt.de/data/from_games/code/read_mapping.zip) to split GTAV dataset into training/validation/test set.
+Please refer the txt files in [split_data](https://github.com/shachoi/RobustNet/tree/main/split_data).
+
 ```
 GTAV
  └ images
@@ -104,6 +108,10 @@ GTAV
    └ test   
      └ folder
 ```
+
+We randomly splitted [Synthia dataset](http://synthia-dataset.net/download/808/) into train/val set.
+Please refer the txt files in [split_data](https://github.com/shachoi/RobustNet/tree/main/split_data).
+
 ```
 synthia
  └ RGB
