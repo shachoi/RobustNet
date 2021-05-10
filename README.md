@@ -65,6 +65,59 @@ cityscapes
      └ val
      └ test
 ```
+```
+bdd-100k
+ └ images
+   └ train
+   └ val
+   └ test
+ └ labels
+   └ train
+   └ val
+```
+```
+mapillary
+ └ training
+   └ images
+   └ labels
+ └ validation
+   └ images
+   └ labels
+ └ test
+   └ images
+   └ labels
+```
+```
+GTAV
+ └ images
+   └ train
+     └ folder
+   └ valid
+     └ folder
+   └ test   
+     └ folder
+ └ labels
+   └ train
+     └ folder
+   └ valid
+     └ folder
+   └ test   
+     └ folder
+```
+```
+synthia
+ └ RGB
+   └ train
+   └ val
+ └ GT
+   └ COLOR
+     └ train
+     └ val
+   └ LABELS
+     └ train
+     └ val
+```
+
 2. You should modify the path in **"<path_to_robustnet>/config.py"** according to your dataset path.
 ```
 #Cityscapes Dir Location
