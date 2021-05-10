@@ -88,8 +88,7 @@ mapillary
    └ labels
 ```
 
-#### We used [GTAV_Split](https://download.visinf.tu-darmstadt.de/data/from_games/code/read_mapping.zip) to split GTAV dataset into training/validation/test set.
-Please refer the txt files in [split_data](https://github.com/shachoi/RobustNet/tree/main/split_data).
+#### We used [GTAV_Split](https://download.visinf.tu-darmstadt.de/data/from_games/code/read_mapping.zip) to split GTAV dataset into training/validation/test set. Please refer the txt files in [split_data](https://github.com/shachoi/RobustNet/tree/main/split_data).
 
 ```
 GTAV
