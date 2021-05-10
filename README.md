@@ -88,7 +88,7 @@ mapillary
    └ labels
 ```
 
-We used [GTAV_Split](https://download.visinf.tu-darmstadt.de/data/from_games/code/read_mapping.zip) to split GTAV dataset into training/validation/test set.
+#### We used [GTAV_Split](https://download.visinf.tu-darmstadt.de/data/from_games/code/read_mapping.zip) to split GTAV dataset into training/validation/test set.
 Please refer the txt files in [split_data](https://github.com/shachoi/RobustNet/tree/main/split_data).
 
 ```
@@ -109,8 +109,7 @@ GTAV
      └ folder
 ```
 
-We randomly splitted [Synthia dataset](http://synthia-dataset.net/download/808/) into train/val set.
-Please refer the txt files in [split_data](https://github.com/shachoi/RobustNet/tree/main/split_data).
+#### We randomly splitted [Synthia dataset](http://synthia-dataset.net/download/808/) into train/val set. Please refer the txt files in [split_data](https://github.com/shachoi/RobustNet/tree/main/split_data).
 
 ```
 synthia
