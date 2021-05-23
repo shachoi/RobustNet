@@ -7,6 +7,7 @@ This repository provides the official PyTorch implementation of the following pa
 
 > Paper: [arxiv](https://arxiv.org/abs/2103.15597)<br>
 > Slide: [slideshare](https://www.slideshare.net/SunghaChoi1/cvpr-2021-oral-robustnet-improving-domain-generalization-in-urbanscene-segmentation) <br>
+> Youtube Video (English): [youtube](https://youtu.be/sNWWfi3Rdps)
 > Short Seminar (Korean): [youtube](https://youtu.be/OAvvsp8KsYM)
 
 > **Abstract:** 
@@ -26,7 +27,11 @@ We conduct extensive experiments in urban-scene segmentation and show the superi
 [Sungha Choi](https://www.linkedin.com/in/sungha-choi-1130185a/) (LG AI Research), [Sanghun Jung](https://www.linkedin.com/in/sanghun-jung-b17a4b1b8/) (KAIST AI)
 
 ## Concept Video
-Coming soon.
+Click the figure to watch the youtube video of our paper!
+
+<p align="center">
+  <a href="https://youtu.be/sNWWfi3Rdps"><img src="assets/robustnet_motivation.png" alt="Youtube Video"></a><br>
+</p>
 
 ## Pytorch Implementation
 ### Installation
