@@ -30,7 +30,7 @@ We conduct extensive experiments in urban-scene segmentation and show the superi
 Click the figure to watch the youtube video of our paper!
 
 <p align="center">
-  <a href="https://youtu.be/sNWWfi3Rdps", target='_blank'><img src="assets/robustnet_motivation.png" alt="Youtube Video"></a><br>
+  <a href="https://youtu.be/sNWWfi3Rdps"><img src="assets/robustnet_motivation.png" alt="Youtube Video"></a><br>
 </p>
 
 ## Pytorch Implementation
