@@ -320,6 +320,7 @@ class ResNet3X3(nn.Module):
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2, wt_layer=wt_layer[6])
         self.avgpool = nn.AvgPool2d(7, stride=1)
         self.fc = nn.Linear(512 * block.expansion, num_classes)
+        self.wt_layer = wt_layer
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -349,27 +350,45 @@ class ResNet3X3(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        x = self.conv1(input)
-        x = self.bn1(x)
+        w_arr = []
+        x_size = x.size()  # 800
+
+        x = self.conv1(x)
+        if self.wt_layer[0] == 1 or self.wt_layer[0] == 2:
+            x, w = self.bn1(x)
+            w_arr.append(w)
+        else:
+            x = self.bn1(x)
         x = self.relu1(x)
         x = self.conv2(x)
-        x = self.bn2(x)
+        if self.wt_layer[1] == 1 or self.wt_layer[1] == 2:
+            x, w = self.bn2(x)
+            w_arr.append(w)
+        else:
+            x = self.bn2(x)
         x = self.relu2(x)
         x = self.conv3(x)
-        x = self.bn3(x)
+        if self.wt_layer[2] == 1 or self.wt_layer[2] == 2:
+            x, w = self.bn3(x)
+            w_arr.append(w)
+        else:
+            x = self.bn3(x)
         x = self.relu3(x)
-
         x = self.maxpool(x)
 
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
+        x_tuple = self.layer1([x, w_arr])  # 400
+        low_level = x_tuple[0]
 
-        x = self.avgpool(x)
-        x = x.view(x.size(0), -1)
-        x = self.fc(x)
+        x_tuple = self.layer2(x_tuple)  # 100
+        x_tuple = self.layer3(x_tuple)  # 100
+        aux_out = x_tuple[0]
+        x_tuple = self.layer4(x_tuple)  # 100
 
+        x = x_tuple[0]
+        w_arr = x_tuple[1]
+        #x = self.avgpool(x)
+        #x = x.view(x.size(0), -1)
+        #x = self.fc(x)
 
         return x
 
@@ -417,6 +436,7 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2, wt_layer=wt_layer[6])
         self.avgpool = nn.AvgPool2d(7, stride=1)
         self.fc = nn.Linear(512 * block.expansion, num_classes)
+        self.wt_layer = wt_layer
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -445,132 +465,35 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
+        w_arr = []
+        x_size = x.size()  # 800
 
+        x = self.conv1(x)
+        if self.wt_layer[2] == 1 or self.wt_layer[2] == 2:
+            x, w = self.bn1(x)
+            w_arr.append(w)
+        else:
+            x = self.bn1(x)
+        x = self.relu(x)
         x = self.maxpool(x)
 
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
+        x_tuple = self.layer1([x, w_arr])  # 400
+        low_level = x_tuple[0]
 
-        x = self.avgpool(x)
-        x = x.view(x.size(0), -1)
-        x = self.fc(x)
+        x_tuple = self.layer2(x_tuple)  # 100
+        x_tuple = self.layer3(x_tuple)  # 100
+        aux_out = x_tuple[0]
+        x_tuple = self.layer4(x_tuple)  # 100
 
-        return x
+        x = x_tuple[0]
+        w_arr = x_tuple[1]
 
-
-class ResNetAdaptiveNorm(nn.Module):
-    """
-    Resnet Global Module for Initialization
-    """
-
-    def __init__(self, args):
-        super(ResNetAdaptiveNorm, self).__init__()
-        self.args = args
-        resnet = resnet101(pretrained=True)
-        resnet.layer0 = nn.Sequential(resnet.conv1, resnet.bn1, resnet.relu1,
-                                      resnet.conv2, resnet.bn2, resnet.relu2,
-                                      resnet.conv3, resnet.bn3, resnet.relu3, resnet.maxpool)
-        self.layer0 = resnet.layer0
-        self.layer1, self.layer2, self.layer3, self.layer4 = \
-            resnet.layer1, resnet.layer2, resnet.layer3, resnet.layer4
-        self.avgpool = nn.AvgPool2d(7, stride=1)
-        self.relu = nn.ReLU(inplace=True)
-        self.fc = resnet.fc
-        freeze_weights(self.layer0)
-        freeze_weights(self.layer1)
-        freeze_weights(self.layer2)
-        freeze_weights(self.layer3)
-        freeze_weights(self.layer4)
-        self.in_channel_list = [3, 128, 256, 512, 1024, 2048]
-        self.adaptive_norm_layer = []
-        for i in range(len(args.adapt_layer)):
-            if args.adapt_layer[i] > 0:
-                self.adaptive_norm_layer.append(nn.Conv2d(self.in_channel_list[i],
-                                                          self.in_channel_list[i],
-                                                          kernel_size=1,
-                                                          padding=0,
-                                                          stride=1,
-                                                          bias=True))
-                initialize_weights(self.adaptive_norm_layer[i])
-        if len(self.adaptive_norm_layer) > 0:
-            self.adaptive_norm_layer = torch.nn.ModuleList(self.adaptive_norm_layer)
-
-    def forward(self, x, backbone_only=False):
-        """
-        If args.adapt_layer[i] == 1, This only do 1x1 Conv without IN
-        Else if args.adapt_layer[i] == 2, this will do 1x1 Conv after IN
-        (Affine parameters have to be false)
-        """
-        if backbone_only:
-            x = self.layer0(x)
-            x = self.layer1(x)
-            x = self.layer2(x)
-            x = self.layer3(x)
-            x = self.layer4(x)
-            x = self.avgpool(x)
-            return x
-
-        if self.args.adapt_layer[0] == 1:
-            x = self.adaptive_norm_layer[0](x)
-            x = torch.tanh(x)
-        elif self.args.adapt_layer[0] == 2:
-            x = torch.nn.InstanceNorm2d(self.in_channel_list[0], affine=False)(x)
-            x = self.adaptive_norm_layer[0](x)
-            x = self.relu(x)
-        x = self.layer0(x)
-        layer0_output = x
-        if self.args.adapt_layer[1] == 1:
-            x = self.adaptive_norm_layer[1](x)
-            x = torch.tanh(x)
-        elif self.args.adapt_layer[1] == 2:
-            x = torch.nn.InstanceNorm2d(self.in_channel_list[1], affine=False)(x)
-            x = self.adaptive_norm_layer[1](x)
-            x = self.relu(x)
-        x = self.layer1(x)
-        layer1_output = x
-        if self.args.adapt_layer[2] == 1:
-            x = self.adaptive_norm_layer[2](x)
-            x = torch.tanh(x)
-        elif self.args.adapt_layer[2] == 2:
-            x = torch.nn.InstanceNorm2d(self.in_channel_list[2], affine=False)(x)
-            x = self.adaptive_norm_layer[2](x)
-            x = self.relu(x)
-        x = self.layer2(x)
-        layer2_output = x
-        if self.args.adapt_layer[3] == 1:
-            x = self.adaptive_norm_layer[3](x)
-            x = torch.tanh(x)
-        elif self.args.adapt_layer[3] == 2:
-            x = torch.nn.InstanceNorm2d(self.in_channel_list[3], affine=False)(x)
-            x = self.adaptive_norm_layer[3](x)
-            x = self.relu(x)
-        x = self.layer3(x)
-        layer3_output = x
-        if self.args.adapt_layer[4] == 1:
-            x = self.adaptive_norm_layer[4](x)
-            x = torch.tanh(x)
-        elif self.args.adapt_layer[4] == 2:
-            x = torch.nn.InstanceNorm2d(self.in_channel_list[4], affine=False)(x)
-            x = self.adaptive_norm_layer[4](x)
-            x = self.relu(x)
-        x = self.layer4(x)
-        layer4_output = x
-        if self.args.adapt_layer[5] == 1:
-            x = self.adaptive_norm_layer[5](x)
-            x = torch.tanh(x)
-        elif self.args.adapt_layer[5] == 2:
-            x = torch.nn.InstanceNorm2d(self.in_channel_list[5], affine=False)(x)
-            x = self.adaptive_norm_layer[5](x)
-            x = self.relu(x)
-
-        x = self.avgpool(x)
+        #x = self.avgpool(x)
+        #x = x.view(x.size(0), -1)
+        #x = self.fc(x)
 
         return x
+
 
 
 def resnet18(pretrained=True, wt_layer=None, **kwargs):
