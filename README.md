@@ -7,8 +7,8 @@ This repository provides the official PyTorch implementation of the following pa
 
 > Paper: [arxiv](https://arxiv.org/abs/2103.15597)<br>
 > Slide: [slideshare](https://www.slideshare.net/SunghaChoi1/cvpr-2021-oral-robustnet-improving-domain-generalization-in-urbanscene-segmentation) <br>
-> Youtube Video (English/5min): [youtube](https://youtu.be/3vf7Oh6gYEE) <br>
-> Short Seminar (Korean/7min): [youtube](https://youtu.be/OAvvsp8KsYM)
+> Youtube Video (English): [Youtube / 5min](https://youtu.be/3vf7Oh6gYEE) <br>
+> Short Seminar (Korean): [LG AI Day / 12min](https://youtu.be/B-g1A1pIslg), [AIIS Spring Retreat / 7min](https://youtu.be/OAvvsp8KsYM)
 
 > **Abstract:** 
 *Enhancing the generalization performance of deep neural networks in the real world (i.e., unseen domains) is crucial for safety-critical applications such as autonomous driving.
