@@ -246,6 +246,7 @@ def evaluate_eval(args, net, optimizer, scheduler, val_loss, hist, dump_images, 
                                     args.best_record[dataset_name]['fwavacc'], args.best_record[dataset_name]['epoch']))
             logging.info('-' * 107)
 
+    if writer:
         # tensorboard logging of validation phase metrics
         writer.add_scalar('{}/acc'.format(dataset_name), acc, curr_iter)
         writer.add_scalar('{}/acc_cls'.format(dataset_name), acc_cls, curr_iter)
