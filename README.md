@@ -159,6 +159,16 @@ __C.DATASET.SYNTHIA_DIR = <YOUR_SYNTHIA_PATH>
 #### All models trained for our paper
 You can download all models evaluated in our paper at [Google Drive](https://drive.google.com/drive/folders/19i1G-gcJ3BV_VxO0ZG9YMJ4Btyj8c6dM?usp=sharing)
 
+4. You can validate pretrained model with following commands.
+```
+<path_to_robustnet>$ CUDA_VISIBLE_DEVICES=0,1 ./scripts/valid_mobile_gtav_isw.sh <weight_file_location>
+```
+
+5. You can infer the segmentation results from images through pretrained model using a sliding window or a pooling method.
+```
+<path_to_robustnet>$ CUDA_VISIBLE_DEVICES=0,1 ./scripts/infer_r50os16_cty_isw.sh <weight_file_location> <result_save_location>
+```
+
 #### ImageNet pretrained ResNet-101 which has three 3×3 convolutions in the first layer
 To train ResNet-101 based RobustNetNet, you should download ImageNet pretrained ResNet-101 from [this link](https://drive.google.com/file/d/1jMx3HdVqSlpIYIyG3VPi8q-ZiclOHlc7/view?usp=sharing). Put it into following directory.
 ```
