@@ -246,12 +246,12 @@ def evaluate_eval(args, net, optimizer, scheduler, val_loss, hist, dump_images, 
                                     args.best_record[dataset_name]['fwavacc'], args.best_record[dataset_name]['epoch']))
             logging.info('-' * 107)
 
-    if writer:
-        # tensorboard logging of validation phase metrics
-        writer.add_scalar('{}/acc'.format(dataset_name), acc, curr_iter)
-        writer.add_scalar('{}/acc_cls'.format(dataset_name), acc_cls, curr_iter)
-        writer.add_scalar('{}/mean_iu'.format(dataset_name), mean_iu, curr_iter)
-        writer.add_scalar('{}/val_loss'.format(dataset_name), val_loss.avg, curr_iter)
+        if writer:
+            # tensorboard logging of validation phase metrics
+            writer.add_scalar('{}/acc'.format(dataset_name), acc, curr_iter)
+            writer.add_scalar('{}/acc_cls'.format(dataset_name), acc_cls, curr_iter)
+            writer.add_scalar('{}/mean_iu'.format(dataset_name), mean_iu, curr_iter)
+            writer.add_scalar('{}/val_loss'.format(dataset_name), val_loss.avg, curr_iter)
 
 
 
