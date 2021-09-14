@@ -175,6 +175,16 @@ To train ResNet-101 based RobustNetNet, you should download ImageNet pretrained 
 <path_to_robustnet>/pretrained/resnet101-imagenet.pth
 ```
 This pretrained model is from [MIT CSAIL Computer Vision Group](http://sceneparsing.csail.mit.edu/)
+
+### Additional experimental results not published in paper
+Training set: GTAV, Model: ResNet-101 OS8<br>
+The averages of the three experimental results for each model are as follows.
+|Model|BDD|Cityscapes|Mapillary|Synthia|GTAV|
+|------|---|---|---|---|---|
+|Baseline|24.85|30.06|31.50|28.78|74.71|
+|IBN|33.30|33.63|36.50|31.32|74.46|
+|ISW|35.37|37.09|38.50|30.49|74.49|
+
 ## Acknowledgments
 Our pytorch implementation is heavily derived from [NVIDIA segmentation](https://github.com/NVIDIA/semantic-segmentation) and [HANet](https://github.com/shachoi/HANet).
 Thanks to the NVIDIA implementations.
