@@ -170,7 +170,7 @@ You can download all models evaluated in our paper at [Google Drive](https://dri
 ```
 
 #### ImageNet pretrained ResNet-101 which has three 3×3 convolutions in the first layer
-To train ResNet-101 based RobustNetNet, you should download ImageNet pretrained ResNet-101 from [this link](https://drive.google.com/file/d/1jMx3HdVqSlpIYIyG3VPi8q-ZiclOHlc7/view?usp=sharing). Put it into following directory.
+To train ResNet-101 based RobustNetNet, you should download ImageNet pretrained ResNet-101 from [this link](https://drive.google.com/file/d/1Sx1Clf9Q9BsXKklZuUIqSJJhjMNF3jAa/view?usp=sharing). Put it into following directory.
 ```
 <path_to_robustnet>/pretrained/resnet101-imagenet.pth
 ```
